@@ -12,5 +12,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/draw_menu"/>
+        app:menu="@menu/draw_menu"
+        android:background="@drawable/menu_fragment_bg"
+        app:itemIconTint="@android:color/white"
+        app:itemTextColor="@android:color/white"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

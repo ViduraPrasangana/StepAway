@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -18,10 +20,14 @@ import android.os.Vibrator;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
+import com.jellybean.stepaway.fragment.HistoryFragment;
+import com.jellybean.stepaway.fragment.HomeFragment;
+import com.jellybean.stepaway.fragment.SettingsFragment;
 
 public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_ACCESS_COARSE_LOCATION = 1;
@@ -32,6 +38,11 @@ public class MainActivity extends AppCompatActivity {
     private TextView title;
     int k,l,m;
 
+    FrameLayout fragFrame;
+    Fragment homeFragment;
+    Fragment historyFragment;
+    Fragment settingsFragment;
+
 
 
     @Override
@@ -41,6 +52,12 @@ public class MainActivity extends AppCompatActivity {
         bottomAppBar = findViewById(R.id.bottomAppBar);
         title = findViewById(R.id.title);
         bottomAppBar.replaceMenu(R.menu.main_menu);
+        fragFrame = findViewById(R.id.frag_frame);
+
+        homeFragment = new HomeFragment();
+        historyFragment = new HistoryFragment();
+        settingsFragment = new SettingsFragment();
+
         setSupportActionBar(bottomAppBar);
         BottomNavigationDrawerFragment bottomNavigationDrawerFragment = new BottomNavigationDrawerFragment();
 
@@ -97,6 +114,21 @@ public class MainActivity extends AppCompatActivity {
             return false;
         } else return true;
 
+    }
+    public void changeFragment(int menu_id){
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        switch (menu_id){
+            case R.id.history:
+                ft.replace(R.id.frag_frame, historyFragment).commit();
+                break;
+            case R.id.settings:
+                ft.replace(R.id.frag_frame, settingsFragment).commit();
+                break;
+            default:
+                ft.replace(R.id.frag_frame, homeFragment).commit();
+                break;
+
+        }
     }
     private void checkBluetoothstate() {
         if (bluetoothAdapter == null)
