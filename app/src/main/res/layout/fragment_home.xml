@@ -3,12 +3,27 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragment.HomeFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:weightSum="10"
+        android:orientation="vertical">
+        <com.rodolfonavalon.shaperipplelibrary.ShapeRipple
+            android:id="@+id/ripple"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            app:ripple_color="@color/colorPrimary"
+            app:ripple_duration="5000"
+            app:ripple_count="7"
+            android:layout_weight="5"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/currentDevices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
 
 </FrameLayout>

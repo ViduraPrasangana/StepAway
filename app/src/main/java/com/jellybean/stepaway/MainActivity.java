@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
@@ -17,14 +16,13 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jellybean.stepaway.fragment.HistoryFragment;
 import com.jellybean.stepaway.fragment.HomeFragment;
 import com.jellybean.stepaway.fragment.SettingsFragment;
@@ -39,9 +37,13 @@ public class MainActivity extends AppCompatActivity {
     int k,l,m;
 
     FrameLayout fragFrame;
-    Fragment homeFragment;
-    Fragment historyFragment;
-    Fragment settingsFragment;
+    HomeFragment homeFragment;
+    HistoryFragment historyFragment;
+    SettingsFragment settingsFragment;
+
+    FloatingActionButton fab;
+
+    boolean searchStatus = false;
 
 
 
@@ -53,11 +55,17 @@ public class MainActivity extends AppCompatActivity {
         title = findViewById(R.id.title);
         bottomAppBar.replaceMenu(R.menu.main_menu);
         fragFrame = findViewById(R.id.frag_frame);
+        fab = findViewById(R.id.fab);
 
-        homeFragment = new HomeFragment();
+        homeFragment = HomeFragment.newInstance(searchStatus);
         historyFragment = new HistoryFragment();
         settingsFragment = new SettingsFragment();
 
+        changeFragment(R.id.home);
+
+        fab.setOnClickListener(v -> {
+            toggleSearch();
+        });
         setSupportActionBar(bottomAppBar);
         BottomNavigationDrawerFragment bottomNavigationDrawerFragment = new BottomNavigationDrawerFragment();
 
@@ -106,6 +114,12 @@ public class MainActivity extends AppCompatActivity {
 
 
         checkCoarseLocationPermission();
+    }
+
+    public void toggleSearch(){
+        searchStatus = !searchStatus;
+        homeFragment.setRipple(searchStatus);
+        fab.setImageDrawable(ContextCompat.getDrawable(this, searchStatus? R.drawable.ic_outline_pause_24: R.drawable.ic_baseline_track_changes_24));
     }
 
     private boolean checkCoarseLocationPermission() {
