@@ -1,15 +1,19 @@
-package com.jellybean.stepaway;
+package com.jellybean.stepaway.model;
+
+import java.util.ArrayList;
 
 public class Device {
 
     private String macAddress;
-    private String identifiedTime;
+    private long lastIdentifiedTime;
     private Threat threatLevel;
+    private ArrayList<Double> distances;
 
-    public Device(String macAddress, String identifiedTime, Threat threatLevel) {
+    public Device(String macAddress, long lastIdentifiedTime, Threat threatLevel) {
         this.macAddress = macAddress;
-        this.identifiedTime = identifiedTime;
+        this.lastIdentifiedTime = lastIdentifiedTime;
         this.threatLevel = threatLevel;
+        distances = new ArrayList<>();
     }
 
     public String getMacAddress() {
@@ -20,12 +24,12 @@ public class Device {
         this.macAddress = macAddress;
     }
 
-    public String getIdentifiedTime() {
-        return identifiedTime;
+    public long getLastIdentifiedTime() {
+        return lastIdentifiedTime;
     }
 
-    public void setIdentifiedTime(String identifiedTime) {
-        this.identifiedTime = identifiedTime;
+    public void setLastIdentifiedTime(long lastIdentifiedTime) {
+        this.lastIdentifiedTime = lastIdentifiedTime;
     }
 
     public Threat getThreatLevel() {
@@ -50,5 +54,13 @@ public class Device {
         public int getValue() {
             return value;
         }
+    }
+
+    public ArrayList<Double> getDistances() {
+        return distances;
+    }
+
+    public void addDistance(double distance){
+        distances.add(distance);
     }
 }

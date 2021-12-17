@@ -10,7 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.jellybean.stepaway.Device;
+import com.jellybean.stepaway.model.Device;
 import com.jellybean.stepaway.DeviceAdapter;
 import com.jellybean.stepaway.R;
 import com.rodolfonavalon.shaperipplelibrary.ShapeRipple;
@@ -63,7 +63,7 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         searchRipple = view.findViewById(R.id.ripple);
         currentDevicesView = view.findViewById(R.id.currentDevices);
-        devices = new ArrayList<Device>(Arrays.asList(new Device("1234","8.30", Device.Threat.LEVEL1),new Device("1234","8.30", Device.Threat.LEVEL2)));
+        devices = new ArrayList<Device>(Arrays.asList(new Device("1234",5456, Device.Threat.LEVEL1),new Device("1234",4636, Device.Threat.LEVEL2)));
         adapter = new DeviceAdapter(devices);
         currentDevicesView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         currentDevicesView.setAdapter(adapter);
@@ -86,4 +86,17 @@ public class HomeFragment extends Fragment {
     public boolean getRippleStatus(){
         return rippleStates;
     }
+
+    public ArrayList<Device> getDevices() {
+        return devices;
+    }
+
+    public void addDevice(Device device){
+        devices.add(device);
+        adapter.notifyDataSetChanged();
+    }
+    public void updateDevices(){
+        adapter.notifyDataSetChanged();
+    }
+
 }

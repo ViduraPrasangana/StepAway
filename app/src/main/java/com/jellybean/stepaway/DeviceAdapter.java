@@ -8,6 +8,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.jellybean.stepaway.model.Device;
+
 import java.util.ArrayList;
 
 public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.ViewHolder> {
@@ -59,7 +61,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Device device = dataset.get(position);
-        holder.getTimeView().setText(device.getIdentifiedTime());
+        holder.getTimeView().setText(device.getLastIdentifiedTime());
     }
 
     @Override

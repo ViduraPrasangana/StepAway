@@ -1,6 +1,7 @@
 package com.jellybean.stepaway;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -9,11 +10,15 @@ import androidx.fragment.app.FragmentTransaction;
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.view.View;
@@ -26,10 +31,18 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jellybean.stepaway.fragment.HistoryFragment;
 import com.jellybean.stepaway.fragment.HomeFragment;
 import com.jellybean.stepaway.fragment.SettingsFragment;
+import com.jellybean.stepaway.service.BluetoothService;
+import com.jellybean.stepaway.service.DeviceIdentifierService;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_ACCESS_COARSE_LOCATION = 1;
     public static final int REQUEST_ENABLE_BLUETOOTH = 11;
+    private static final int PERMISSION_REQUEST_FINE_LOCATION = 21;
+    private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 31;
+
     private BluetoothAdapter bluetoothAdapter;
     Vibrator vibrator;
     private BottomAppBar bottomAppBar;
@@ -43,9 +56,8 @@ public class MainActivity extends AppCompatActivity {
 
     FloatingActionButton fab;
 
+    DeviceIdentifierService deviceIdentifierService;
     boolean searchStatus = false;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +68,10 @@ public class MainActivity extends AppCompatActivity {
         bottomAppBar.replaceMenu(R.menu.main_menu);
         fragFrame = findViewById(R.id.frag_frame);
         fab = findViewById(R.id.fab);
+
+        getPermissions();
+
+        deviceIdentifierService = new DeviceIdentifierService(this);
 
         homeFragment = HomeFragment.newInstance(searchStatus);
         historyFragment = new HistoryFragment();
@@ -75,60 +91,23 @@ public class MainActivity extends AppCompatActivity {
         title.setOnClickListener(v -> {
             bottomNavigationDrawerFragment.show(getSupportFragmentManager(),bottomNavigationDrawerFragment.getTag());
         });
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        checkBluetoothstate();
-
-        new IntentFilter(BluetoothDevice.ACTION_FOUND);
-
-        registerReceiver(devicesFoundReciever, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-        registerReceiver(devicesFoundReciever, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED));
-        registerReceiver(devicesFoundReciever, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
-
-//        t.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (t.isChecked())
-//                {
-//                    if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
-//                        if (checkCoarseLocationPermission()) {
-//                            listAdapter.clear();
-//                            l=1;
-//                            m=9;
-//                            bluetoothAdapter.startDiscovery();
-//                            Toast.makeText(MainActivity.this, "Scanning Started", Toast.LENGTH_SHORT).show();
-//
-//                        }
-//                    } else {
-//                        checkBluetoothstate();
-//                    }
-//
-//                }
-//                else {
-//                    m=2;
-//                    listAdapter.clear();
-//                    macadapter.clear();
-//                }
-//            }
-//        });
 
 
-        checkCoarseLocationPermission();
     }
 
     public void toggleSearch(){
         searchStatus = !searchStatus;
         homeFragment.setRipple(searchStatus);
         fab.setImageDrawable(ContextCompat.getDrawable(this, searchStatus? R.drawable.ic_outline_pause_24: R.drawable.ic_baseline_track_changes_24));
+        if(searchStatus) deviceIdentifierService.startScan();
+        else deviceIdentifierService.stopScan();
     }
 
-    private boolean checkCoarseLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_ACCESS_COARSE_LOCATION);
-            return false;
-        } else return true;
-
+    public HomeFragment getHomeFragment() {
+        return homeFragment;
     }
+
+
     public void changeFragment(int menu_id){
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         switch (menu_id){
@@ -144,32 +123,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-    private void checkBluetoothstate() {
-        if (bluetoothAdapter == null)
-            Toast.makeText(this, "Bluetooth is not supported in your device !", Toast.LENGTH_SHORT).show();
-        else {
-            if (bluetoothAdapter.isEnabled()) {
-                if (bluetoothAdapter.isDiscovering()) {
-                    Toast.makeText(this, "Device discovering process ...", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Bluetooth is enabled", Toast.LENGTH_SHORT).show();
-//                    t.setEnabled(true);
-                }
-            } else {
-                Toast.makeText(this, "You need to enable bluetooth", Toast.LENGTH_SHORT).show();
-                Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableIntent, REQUEST_ENABLE_BLUETOOTH);
-            }
-        }
-    }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_ENABLE_BLUETOOTH) {
-            checkBluetoothstate();
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -183,6 +136,69 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "Access coarse location forbidden. You can't scan Bluetooth devices", Toast.LENGTH_SHORT).show();
                 }
                 break;
+        }
+    }
+
+    public void getPermissions(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                if (this.checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    if (this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                        builder.setTitle("This app needs background location access");
+                        builder.setMessage("Please grant location access so this app can detect beacons in the background.");
+                        builder.setPositiveButton(android.R.string.ok, null);
+                        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                                requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                                        PERMISSION_REQUEST_BACKGROUND_LOCATION);
+                            }
+
+                        });
+                        builder.show();
+                    }
+                    else {
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                        builder.setTitle("Functionality limited");
+                        builder.setMessage("Since background location access has not been granted, this app will not be able to discover beacons in the background.  Please go to Settings -> Applications -> Permissions and grant background location access to this app.");
+                        builder.setPositiveButton(android.R.string.ok, null);
+                        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                            }
+
+                        });
+                        builder.show();
+                    }
+
+                }
+            } else {
+                if (!this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                            PERMISSION_REQUEST_FINE_LOCATION);
+                }
+                else {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Functionality limited");
+                    builder.setMessage("Since location access has not been granted, this app will not be able to discover beacons.  Please go to Settings -> Applications -> Permissions and grant location access to this app.");
+                    builder.setPositiveButton(android.R.string.ok, null);
+                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                        }
+
+                    });
+                    builder.show();
+                }
+
+            }
         }
     }
 
