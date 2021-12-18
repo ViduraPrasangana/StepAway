@@ -7,13 +7,15 @@ public class Device {
     private String macAddress;
     private long lastIdentifiedTime;
     private Threat threatLevel;
-    private ArrayList<Double> distances;
+    private ArrayList<Integer> rssis;
+    private double averageDistance;
 
     public Device(String macAddress, long lastIdentifiedTime, Threat threatLevel) {
         this.macAddress = macAddress;
         this.lastIdentifiedTime = lastIdentifiedTime;
         this.threatLevel = threatLevel;
-        distances = new ArrayList<>();
+        this.averageDistance = 0;
+        rssis = new ArrayList<Integer>();
     }
 
     public String getMacAddress() {
@@ -56,11 +58,19 @@ public class Device {
         }
     }
 
-    public ArrayList<Double> getDistances() {
-        return distances;
+    public ArrayList<Integer> getRssis() {
+        return rssis;
     }
 
-    public void addDistance(double distance){
-        distances.add(distance);
+    public void addRssi(Integer rssi){
+        rssis.add(rssi);
+    }
+
+    public double getAverageDistance() {
+        return averageDistance;
+    }
+
+    public void setAverageDistance(double averageDistance) {
+        this.averageDistance = averageDistance;
     }
 }

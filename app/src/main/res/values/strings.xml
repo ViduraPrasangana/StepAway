@@ -8,4 +8,6 @@
     <string name="level3">Danger</string>
 
     <string name="default_time">00.00 AM</string>
+
+    <string name="ble_uuid">f81b5e0d-270b-43b1-ba6e-c2ef75cdd1cb</string>
 </resources>

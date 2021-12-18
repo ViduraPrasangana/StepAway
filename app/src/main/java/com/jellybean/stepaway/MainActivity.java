@@ -3,25 +3,19 @@ package com.jellybean.stepaway;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,11 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jellybean.stepaway.fragment.HistoryFragment;
 import com.jellybean.stepaway.fragment.HomeFragment;
 import com.jellybean.stepaway.fragment.SettingsFragment;
-import com.jellybean.stepaway.service.BluetoothService;
 import com.jellybean.stepaway.service.DeviceIdentifierService;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_ACCESS_COARSE_LOCATION = 1;
@@ -99,8 +89,8 @@ public class MainActivity extends AppCompatActivity {
         searchStatus = !searchStatus;
         homeFragment.setRipple(searchStatus);
         fab.setImageDrawable(ContextCompat.getDrawable(this, searchStatus? R.drawable.ic_outline_pause_24: R.drawable.ic_baseline_track_changes_24));
-        if(searchStatus) deviceIdentifierService.startScan();
-        else deviceIdentifierService.stopScan();
+        if(searchStatus) deviceIdentifierService.startService();
+        else deviceIdentifierService.stopService();
     }
 
     public HomeFragment getHomeFragment() {

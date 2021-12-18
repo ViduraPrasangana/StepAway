@@ -1,49 +1,41 @@
 package com.jellybean.stepaway.service;
 
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
-
 import com.jellybean.stepaway.model.Device;
 import com.jellybean.stepaway.MainActivity;
-
-import java.text.SimpleDateFormat;
 
 public class DeviceIdentifierService {
     final int MEASURED_POWER = -69;
     final int N = 2;
+    final int AVERAGE_COUNT = 3;
 
     BluetoothService bluetoothService;
     MainActivity activity ;
 
 
-    private ScanCallback scanCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            super.onScanResult(callbackType, result);
-            System.out.println("############ found " +result.getDevice().getAddress()+" "+result.getDevice().getName());
-            addDevice(new Device(
-                    result.getDevice().getAddress(),
-                    System.currentTimeMillis(),
-                    Device.Threat.LEVEL3
-            ),result.getRssi());
-        }
-    };
 
     public DeviceIdentifierService(MainActivity activity) {
-        bluetoothService = new BluetoothService();
+        bluetoothService = new BluetoothService(this);
         bluetoothService.initBLE(activity);
 
         this.activity = activity;
     }
 
-    public void startScan(){
-        bluetoothService.startScanning(scanCallback);
+    public void startService(){
+        bluetoothService.startScanning();
     }
-    public void stopScan(){
-        bluetoothService.stopScanning(scanCallback);
+    public void stopService(){
+        bluetoothService.stopScanning();
     }
-//    public int calculateAverageDistance(){}
-    public double calculateDistance(int rssi){
+    public double calculateAverageDistance(Device device){
+        double sum = 0;
+        int size = device.getRssis().size();
+        for (int rssi:
+        device.getRssis().subList(Math.max(size-AVERAGE_COUNT,0),size-1)){
+            sum+=rssi;
+        }
+        return calculateDistance(sum/AVERAGE_COUNT);
+    }
+    public double calculateDistance(double rssi){
         return (double) Math.round(Math.pow(10,((double) (MEASURED_POWER-rssi) / (10*N) )) * 100) / 100;
     }
 
@@ -57,10 +49,12 @@ public class DeviceIdentifierService {
             }
         }
         if(!in){
-            device.addDistance(calculateDistance(rssi));
+            device.addRssi(rssi);
+            device.setAverageDistance(calculateAverageDistance(device));
             activity.getHomeFragment().addDevice(device);
         }else{
-            inDevice.addDistance(calculateDistance(rssi));
+            inDevice.addRssi(rssi);
+            inDevice.setAverageDistance(calculateAverageDistance(inDevice));
             activity.getHomeFragment().updateDevices();
         }
 
