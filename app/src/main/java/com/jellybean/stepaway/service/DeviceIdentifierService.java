@@ -1,5 +1,7 @@
 package com.jellybean.stepaway.service;
 
+import android.os.Handler;
+
 import com.jellybean.stepaway.model.Device;
 import com.jellybean.stepaway.MainActivity;
 
@@ -7,11 +9,16 @@ public class DeviceIdentifierService {
     final int MEASURED_POWER = -69;
     final int N = 2;
     final int AVERAGE_COUNT = 3;
+    final int TOGGLE_TIMEOUT = 10000;
 
     BluetoothService bluetoothService;
     MainActivity activity ;
 
+    Runnable serviceRunnable;
+    Runnable serviceRunnable2;
+    Handler serviceHandler = new Handler();
 
+    boolean advertisable = true;
 
     public DeviceIdentifierService(MainActivity activity) {
         bluetoothService = new BluetoothService(this);
@@ -21,11 +28,41 @@ public class DeviceIdentifierService {
     }
 
     public void startService(){
-        bluetoothService.startScanning();
+
+        serviceRunnable = new Runnable() {
+            @Override
+            public void run() {
+                bluetoothService.stopAdvertising();
+                bluetoothService.startScanning();
+                activity.setStatusText("Scanning...");
+                serviceRunnable2 = new Runnable() {
+                    @Override
+                    public void run() {
+                        bluetoothService.stopScanning();
+                        bluetoothService.startAdvertising();
+                        activity.setStatusText("Advertising...");
+                        serviceHandler.postDelayed(serviceRunnable,TOGGLE_TIMEOUT);
+                    }
+                };
+                if(advertisable) serviceHandler.postDelayed(serviceRunnable2, TOGGLE_TIMEOUT);
+            }
+        };
+
+        serviceHandler.post(serviceRunnable);
+
     }
     public void stopService(){
+        serviceHandler.removeCallbacks(serviceRunnable);
+        serviceHandler.removeCallbacks(serviceRunnable2);
+        bluetoothService.stopAdvertising();
         bluetoothService.stopScanning();
+        activity.setStatusText("");
     }
+
+    public void setAdvertisable(boolean advertisable) {
+        this.advertisable = advertisable;
+    }
+
     public double calculateAverageDistance(Device device){
         double sum = 0;
         int size = device.getRssis().size();

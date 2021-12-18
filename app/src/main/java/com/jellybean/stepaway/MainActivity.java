@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     Vibrator vibrator;
     private BottomAppBar bottomAppBar;
     private TextView title;
+    private TextView status;
     int k,l,m;
 
     FrameLayout fragFrame;
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         bottomAppBar = findViewById(R.id.bottomAppBar);
         title = findViewById(R.id.title);
+        status = findViewById(R.id.status);
         bottomAppBar.replaceMenu(R.menu.main_menu);
         fragFrame = findViewById(R.id.frag_frame);
         fab = findViewById(R.id.fab);
@@ -84,7 +86,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
+    public void setStatusText(String status){
+        this.status.setText(status);
+    }
     public void toggleSearch(){
         searchStatus = !searchStatus;
         homeFragment.setRipple(searchStatus);

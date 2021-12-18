@@ -41,6 +41,8 @@ public class BluetoothService {
 
     Intent enableIntent;
 
+    boolean advertisable = true;
+
     AdvertiseCallback advertisingCallback = new AdvertiseCallback() {
         @Override
         public void onStartSuccess(AdvertiseSettings settingsInEffect) {
@@ -72,10 +74,12 @@ public class BluetoothService {
     }
 
     public void initBLE(Activity context){
-        bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-        bluetoothAdapter = bluetoothManager.getAdapter();
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
+
+        advertisable = bluetoothAdapter.isMultipleAdvertisementSupported();
+        deviceIdentifierService.setAdvertisable(advertisable);
 
         if(!bluetoothAdapter.isEnabled()){
             enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -83,8 +87,8 @@ public class BluetoothService {
         }
 
         advertiseSettings = new AdvertiseSettings.Builder()
-                .setAdvertiseMode( AdvertiseSettings.ADVERTISE_MODE_BALANCED )
-                .setTxPowerLevel( AdvertiseSettings.ADVERTISE_TX_POWER_LOW )
+                .setAdvertiseMode( AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY )
+                .setTxPowerLevel( AdvertiseSettings.ADVERTISE_TX_POWER_HIGH )
                 .setConnectable( false )
                 .build();
 
@@ -119,10 +123,10 @@ public class BluetoothService {
     }
 
     public void startAdvertising(){
-        bluetoothLeAdvertiser.startAdvertising(advertiseSettings,advertiseData,advertisingCallback);
+        if(advertisable) bluetoothLeAdvertiser.startAdvertising(advertiseSettings,advertiseData,advertisingCallback);
     }
     public void stopAdvertising(){
-        bluetoothLeAdvertiser.stopAdvertising(advertisingCallback);
+        if(advertisable) bluetoothLeAdvertiser.stopAdvertising(advertisingCallback);
     }
 
 
