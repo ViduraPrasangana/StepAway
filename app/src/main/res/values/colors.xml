@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#135495</color>
     <color name="colorAccent">#FFEA00</color>
 
+    <color name="accentText">#FFFFFF</color>
+
     <color name="level1">#FFCA28</color>
     <color name="level2">#FF8F00</color>
     <color name="level3">#E64A19</color>
