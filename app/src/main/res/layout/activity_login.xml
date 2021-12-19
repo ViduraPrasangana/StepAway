@@ -19,17 +19,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/accentText"
+            android:textSize="@dimen/login_text"
             android:text="Enter your mobile number"
             />
 
       <LinearLayout
           android:layout_width="wrap_content"
-          android:layout_height="50dp">
+          android:layout_height="50dp"
+          android:layout_marginBottom="20dp">
           <EditText
               android:id="@+id/phone"
               android:layout_width="200dp"
               android:layout_height="match_parent"
               android:layout_margin="5dp"
+              android:inputType="phone"
+              android:paddingHorizontal="10dp"
               android:textColor="@color/colorPrimary"
               android:background="@drawable/otp_background"/>
         <Button
@@ -47,6 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/accentText"
+            android:textSize="@dimen/login_text"
             android:text="Enter the OTP"/>
 
         <com.chaos.view.PinView
@@ -64,11 +69,11 @@
             app:cursorColor="@color/colorPrimary"
             app:cursorWidth="2dp"
             app:hideLineWhenFilled="true"
-            app:itemCount="5"
-            app:itemHeight="48dp"
+            app:itemCount="6"
+            app:itemHeight="40dp"
             app:itemRadius="16dp"
             app:itemSpacing="10dp"
-            app:itemWidth="48dp"
+            app:itemWidth="40dp"
             app:lineColor="@android:color/transparent"
             app:lineWidth="2dp"
             app:viewType="rectangle"

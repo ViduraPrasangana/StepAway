@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.jellybean.stepaway.MainActivity;
 import com.jellybean.stepaway.model.Device;
 import com.jellybean.stepaway.DeviceAdapter;
 import com.jellybean.stepaway.R;
@@ -37,6 +38,12 @@ public class HomeFragment extends Fragment {
 
     public HomeFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setRipple(((MainActivity) requireActivity()).isSearchStatus());
     }
 
 

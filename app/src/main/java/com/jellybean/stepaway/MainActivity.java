@@ -87,6 +87,11 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+    public boolean isSearchStatus() {
+        return searchStatus;
+    }
+
     public void setStatusText(String status){
         this.status.setText(status);
     }
