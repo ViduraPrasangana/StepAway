@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "997436679502",
+    "project_id": "stepaway-977d1",
+    "storage_bucket": "stepaway-977d1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:997436679502:android:d7c50457c2c6321bf26a1f",
+        "android_client_info": {
+          "package_name": "com.jellybean.stepaway"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "997436679502-v4b1k3fnj1f9o435stflkofp2et08eq0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjJZiJBkWZAITkajkfHdC5GZNU9A5mKcc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "997436679502-v4b1k3fnj1f9o435stflkofp2et08eq0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

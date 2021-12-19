@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.jellybean.stepaway.fragment.BottomNavigationDrawerFragment;
 import com.jellybean.stepaway.fragment.HistoryFragment;
 import com.jellybean.stepaway.fragment.HomeFragment;
 import com.jellybean.stepaway.fragment.SettingsFragment;

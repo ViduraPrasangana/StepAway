@@ -9,6 +9,7 @@ import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +25,9 @@ import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -60,7 +64,17 @@ public class BluetoothService {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            System.out.println("############ found " +result.getDevice().getAddress()+" "+result.getDevice().getName());
+            String data = "";
+            ScanRecord scanRecord = result.getScanRecord();
+
+            if(scanRecord != null){
+                for (Map.Entry<ParcelUuid, byte[]> entry : scanRecord.getServiceData().entrySet()) {
+                    System.out.println(entry.getKey().toString()+" "+new String(entry.getValue(),Charset.forName( "UTF-8" )));
+                }
+
+//                data = new String(scanRecord.getServiceData().get(scanRecord.getServiceUuids().get(0)), Charset.forName( "UTF-8" ));
+            }
+            System.out.println("############ found " +result.getDevice().getAddress()+" "+result.getDevice().getName()+" " + data);
             deviceIdentifierService.addDevice(new Device(
                     result.getDevice().getAddress(),
                     System.currentTimeMillis(),
@@ -93,15 +107,18 @@ public class BluetoothService {
                 .build();
 
         ParcelUuid pUuid = new ParcelUuid( UUID.fromString( context.getString( R.string.ble_uuid ) ) );
-
+        System.out.println("**************** " + pUuid.toString());
         advertiseData = new AdvertiseData.Builder()
                 .setIncludeDeviceName( false )
                 .setIncludeTxPowerLevel(false)
-                .addServiceUuid( pUuid )
+                .addServiceData(pUuid,"1234".getBytes( Charset.forName( "UTF-8" ) ))
                 .build();
+        System.out.println(advertiseData.toString());
+        for (Map.Entry<ParcelUuid, byte[]> entry : advertiseData.getServiceData().entrySet()) {
+            System.out.println(entry.getKey().toString()+" "+Arrays.toString(entry.getValue()));
+        }
+        System.out.println(Arrays.toString("".getBytes( Charset.forName( "UTF-8" ) )));
     }
-
-
 
     public void startScanning() {
         AsyncTask.execute(new Runnable() {

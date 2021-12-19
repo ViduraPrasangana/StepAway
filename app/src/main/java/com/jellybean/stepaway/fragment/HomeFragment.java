@@ -54,6 +54,7 @@ public class HomeFragment extends Fragment {
         if (getArguments() != null) {
             rippleStates = getArguments().getBoolean(SEARCH_STATUS);
         }
+
     }
 
     @Override

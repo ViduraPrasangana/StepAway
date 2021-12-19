@@ -1,4 +1,4 @@
-package com.jellybean.stepaway;
+package com.jellybean.stepaway.fragment;
 
 import android.app.Dialog;
 import android.os.Bundle;
@@ -9,7 +9,6 @@ import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -19,16 +18,11 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.shape.MaterialShapeDrawable;
 import com.google.android.material.shape.ShapeAppearanceModel;
+import com.jellybean.stepaway.MainActivity;
+import com.jellybean.stepaway.R;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link BottomNavigationDrawerFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class BottomNavigationDrawerFragment extends BottomSheetDialogFragment {
 
 
