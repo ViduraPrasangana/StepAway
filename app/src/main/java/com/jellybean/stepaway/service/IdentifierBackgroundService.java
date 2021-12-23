@@ -1,0 +1,113 @@
+package com.jellybean.stepaway.service;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
+import android.os.IBinder;
+import android.os.PowerManager;
+
+import com.jellybean.stepaway.MainActivity;
+import com.jellybean.stepaway.R;
+
+import java.util.Arrays;
+import java.util.Objects;
+
+public class IdentifierBackgroundService extends Service {
+    public final static String START = "START";
+    public final static String STOP = "STOP";
+
+    PowerManager.WakeLock wakeLock= null;
+    boolean serviceStarted = false;
+
+    DeviceIdentifierService deviceIdentifierService;
+
+    public IdentifierBackgroundService() {
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if(intent !=null){
+            switch (Objects.requireNonNull(intent.getAction())){
+                case START:
+                    startService();
+                    break;
+                case STOP:
+                    stopService();
+                    break;
+            }
+        }
+        return START_STICKY;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Notification notification = createNotification();
+        startForeground(1, notification);
+    }
+    public void startService(){
+        if(serviceStarted) return;
+        serviceStarted = true;
+
+        wakeLock = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"StepAway::lock");
+        wakeLock.acquire(100*60*1000L /*10 minutes*/);
+
+        deviceIdentifierService = new DeviceIdentifierService(this);
+        deviceIdentifierService.startService();
+    }
+
+    public void stopService(){
+        deviceIdentifierService.stopService();
+        if(wakeLock.isHeld()){
+            wakeLock.release();
+        }
+        stopForeground(true);
+        stopSelf();
+        serviceStarted = false;
+    }
+
+    private Notification createNotification(){
+        String NOTIFICATION_CHANNEL_ID = "STEP_AWAY_CHANNEL";
+        Notification.Builder notifiBuilder;
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+//        notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                notificationIntent, 0);
+
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.O){
+            NotificationManager notificationManager =(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,"Step away notification",NotificationManager.IMPORTANCE_HIGH);
+            notificationChannel.setDescription("Step away notification");
+            notificationChannel.enableLights(true);
+            notificationChannel.setLightColor(Color.RED);
+            notificationChannel.enableVibration(true);
+            notificationChannel.setVibrationPattern(new long[]{100,200,300});
+            notificationManager.createNotificationChannel(notificationChannel);
+
+            notifiBuilder = new Notification.Builder(this,NOTIFICATION_CHANNEL_ID);
+        } else {
+            notifiBuilder = new Notification.Builder(this);
+        }
+
+
+        return notifiBuilder.setContentTitle("Step away")
+                .setContentText("Scanning...")
+                .setContentIntent(pendingIntent)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setTicker("Step Away")
+                .build();
+    }
+}

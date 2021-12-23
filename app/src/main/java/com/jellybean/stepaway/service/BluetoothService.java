@@ -33,7 +33,6 @@ import java.util.UUID;
 
 
 public class BluetoothService {
-    final int REQUEST_ENABLE_BT = 1;
     DeviceIdentifierService deviceIdentifierService;
     CloudService cloudService;
 
@@ -89,7 +88,7 @@ public class BluetoothService {
         this.deviceIdentifierService = deviceIdentifierService;
     }
 
-    public void initBLE(Activity context){
+    public void initBLE(Context context){
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
@@ -97,11 +96,6 @@ public class BluetoothService {
         advertisable = bluetoothAdapter.isMultipleAdvertisementSupported();
         deviceIdentifierService.setAdvertisable(advertisable);
         this.cloudService = CloudService.getInstance();
-
-        if(!bluetoothAdapter.isEnabled()){
-            enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            context.startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-        }
 
         advertiseSettings = new AdvertiseSettings.Builder()
                 .setAdvertiseMode( AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY )

@@ -27,12 +27,14 @@ import com.jellybean.stepaway.fragment.HistoryFragment;
 import com.jellybean.stepaway.fragment.HomeFragment;
 import com.jellybean.stepaway.fragment.SettingsFragment;
 import com.jellybean.stepaway.service.DeviceIdentifierService;
+import com.jellybean.stepaway.service.IdentifierBackgroundService;
 
 public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_ACCESS_COARSE_LOCATION = 1;
     public static final int REQUEST_ENABLE_BLUETOOTH = 11;
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 21;
     private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 31;
+    final int REQUEST_ENABLE_BT = 1;
 
     private BluetoothAdapter bluetoothAdapter;
     Vibrator vibrator;
@@ -63,7 +65,10 @@ public class MainActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab);
 
         getPermissions();
-
+        if(!BluetoothAdapter.getDefaultAdapter().isEnabled()){
+            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+        }
         deviceIdentifierService = new DeviceIdentifierService(this);
 
         homeFragment = HomeFragment.newInstance(searchStatus);
@@ -99,8 +104,17 @@ public class MainActivity extends AppCompatActivity {
         searchStatus = !searchStatus;
         homeFragment.setRipple(searchStatus);
         fab.setImageDrawable(ContextCompat.getDrawable(this, searchStatus? R.drawable.ic_outline_pause_24: R.drawable.ic_baseline_track_changes_24));
-        if(searchStatus) deviceIdentifierService.startService();
-        else deviceIdentifierService.stopService();
+//        if(searchStatus) deviceIdentifierService.startService();
+//        else deviceIdentifierService.stopService();
+
+        Intent i = new Intent(this, IdentifierBackgroundService.class);
+        if(searchStatus) i.setAction(IdentifierBackgroundService.START);
+        else i.setAction(IdentifierBackgroundService.STOP);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(i);
+            return;
+        }
+        startService(i);
     }
 
     public HomeFragment getHomeFragment() {

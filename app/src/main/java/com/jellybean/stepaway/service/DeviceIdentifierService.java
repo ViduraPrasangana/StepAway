@@ -1,5 +1,6 @@
 package com.jellybean.stepaway.service;
 
+import android.content.Context;
 import android.os.Handler;
 
 import com.jellybean.stepaway.model.Device;
@@ -20,7 +21,8 @@ public class DeviceIdentifierService {
 
     BluetoothService bluetoothService;
     CloudService cloudService;
-    MainActivity activity ;
+    MainActivity activity = null;
+    Context context;
 
     Runnable serviceRunnable;
     Runnable serviceRunnable2;
@@ -44,35 +46,41 @@ public class DeviceIdentifierService {
         }
     };
 
-    public DeviceIdentifierService(MainActivity activity) {
+
+    public DeviceIdentifierService(Context activity) {
+        if(activity instanceof MainActivity){
+            this.activity = (MainActivity) activity;
+        }
+        else {
+            this.context = activity;
+        }
         bluetoothService = new BluetoothService(this);
         cloudService = CloudService.getInstance();
         bluetoothService.initBLE(activity);
-        this.activity = activity;
     }
 
     public void clearDevice(Device device){
         cloudService.sendDeviceToDB(device);
         identifiedDevices.remove(device);
-        activity.getHomeFragment().updateDevices();
+        if(activity!=null) activity.getHomeFragment().updateDevices();
     }
 
     public void startService(){
         identifiedDevices = new ArrayList<>();
-        activity.getHomeFragment().setDevices(identifiedDevices);
+        if(activity!=null) activity.getHomeFragment().setDevices(identifiedDevices);
 
         serviceRunnable = new Runnable() {
             @Override
             public void run() {
                 bluetoothService.stopAdvertising();
                 bluetoothService.startScanning();
-                activity.setStatusText("Scanning...");
+                if(activity!=null) activity.setStatusText("Scanning...");
                 serviceRunnable2 = new Runnable() {
                     @Override
                     public void run() {
                         bluetoothService.stopScanning();
                         bluetoothService.startAdvertising();
-                        activity.setStatusText("Advertising...");
+                        if(activity!=null) activity.setStatusText("Advertising...");
                         serviceHandler.postDelayed(serviceRunnable,TOGGLE_TIMEOUT);
                     }
                 };
@@ -91,13 +99,13 @@ public class DeviceIdentifierService {
         }
         serviceHandler.removeCallbacks(garbageRunnable);
         identifiedDevices = new ArrayList<>();
-        activity.getHomeFragment().setDevices(identifiedDevices);
+        if(activity!=null) activity.getHomeFragment().setDevices(identifiedDevices);
 
         serviceHandler.removeCallbacks(serviceRunnable);
         serviceHandler.removeCallbacks(serviceRunnable2);
         bluetoothService.stopAdvertising();
         bluetoothService.stopScanning();
-        activity.setStatusText("");
+        if(activity!=null) activity.setStatusText("");
     }
 
     public void setAdvertisable(boolean advertisable) {
@@ -120,7 +128,7 @@ public class DeviceIdentifierService {
     public void addDevice(Device device,int rssi){
         boolean in = false;
         Device inDevice = null;
-        for(Device device1:activity.getHomeFragment().getDevices()){
+        for(Device device1:identifiedDevices){
             if(device1.getMacAddress().equals(device.getMacAddress())) {
                 in = true;
                 inDevice = device1;
@@ -129,12 +137,13 @@ public class DeviceIdentifierService {
         if(!in){
             device.addRssi(rssi);
             device.setAverageDistance(calculateAverageDistance(device));
-            activity.getHomeFragment().addDevice(device);
+            identifiedDevices.add(device);
+            if(activity!=null) activity.getHomeFragment().updateDevices();
         }else{
             inDevice.addRssi(rssi);
             inDevice.setAverageDistance(calculateAverageDistance(inDevice));
             inDevice.setLastIdentifiedTime(System.currentTimeMillis());
-            activity.getHomeFragment().updateDevices();
+            if(activity!=null) activity.getHomeFragment().updateDevices();
         }
 
     }
