@@ -5,13 +5,21 @@ import android.os.Handler;
 import com.jellybean.stepaway.model.Device;
 import com.jellybean.stepaway.MainActivity;
 
+import java.util.ArrayList;
+
 public class DeviceIdentifierService {
     final int MEASURED_POWER = -69;
     final int N = 2;
     final int AVERAGE_COUNT = 3;
     final int TOGGLE_TIMEOUT = 10000;
+    final int RECYCLE_DEVICE_TIMEOUT = 5000;
+
+    public final static float DISTANCE_DANGER = 1;
+    public final static float DISTANCE_POTENTIAL_RISK = 2;
+    public final static float DISTANCE_WARNING = 3;
 
     BluetoothService bluetoothService;
+    CloudService cloudService;
     MainActivity activity ;
 
     Runnable serviceRunnable;
@@ -20,14 +28,38 @@ public class DeviceIdentifierService {
 
     boolean advertisable = true;
 
+    private ArrayList<Device> identifiedDevices;
+
+    Runnable garbageRunnable = new Runnable() {
+        @Override
+        public void run() {
+            for (Device device:
+                 identifiedDevices) {
+                if(System.currentTimeMillis()-device.getLastIdentifiedTime()>RECYCLE_DEVICE_TIMEOUT){
+                    clearDevice(device);
+                }
+            }
+            serviceHandler.postDelayed(this,5000);
+
+        }
+    };
+
     public DeviceIdentifierService(MainActivity activity) {
         bluetoothService = new BluetoothService(this);
+        cloudService = CloudService.getInstance();
         bluetoothService.initBLE(activity);
-
         this.activity = activity;
     }
 
+    public void clearDevice(Device device){
+        cloudService.sendDeviceToDB(device);
+        identifiedDevices.remove(device);
+        activity.getHomeFragment().updateDevices();
+    }
+
     public void startService(){
+        identifiedDevices = new ArrayList<>();
+        activity.getHomeFragment().setDevices(identifiedDevices);
 
         serviceRunnable = new Runnable() {
             @Override
@@ -49,9 +81,18 @@ public class DeviceIdentifierService {
         };
 
         serviceHandler.post(serviceRunnable);
+        serviceHandler.postDelayed(garbageRunnable,5000);
 
     }
     public void stopService(){
+        for (Device device :
+                identifiedDevices) {
+            clearDevice(device);
+        }
+        serviceHandler.removeCallbacks(garbageRunnable);
+        identifiedDevices = new ArrayList<>();
+        activity.getHomeFragment().setDevices(identifiedDevices);
+
         serviceHandler.removeCallbacks(serviceRunnable);
         serviceHandler.removeCallbacks(serviceRunnable2);
         bluetoothService.stopAdvertising();
@@ -92,6 +133,7 @@ public class DeviceIdentifierService {
         }else{
             inDevice.addRssi(rssi);
             inDevice.setAverageDistance(calculateAverageDistance(inDevice));
+            inDevice.setLastIdentifiedTime(System.currentTimeMillis());
             activity.getHomeFragment().updateDevices();
         }
 

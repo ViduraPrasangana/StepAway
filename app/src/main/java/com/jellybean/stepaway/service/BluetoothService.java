@@ -28,12 +28,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 
 public class BluetoothService {
     final int REQUEST_ENABLE_BT = 1;
     DeviceIdentifierService deviceIdentifierService;
+    CloudService cloudService;
 
     BluetoothAdapter bluetoothAdapter;
     BluetoothManager bluetoothManager;
@@ -94,6 +96,7 @@ public class BluetoothService {
 
         advertisable = bluetoothAdapter.isMultipleAdvertisementSupported();
         deviceIdentifierService.setAdvertisable(advertisable);
+        this.cloudService = CloudService.getInstance();
 
         if(!bluetoothAdapter.isEnabled()){
             enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -107,11 +110,10 @@ public class BluetoothService {
                 .build();
 
         ParcelUuid pUuid = new ParcelUuid( UUID.fromString( context.getString( R.string.ble_uuid ) ) );
-        System.out.println("**************** " + pUuid.toString());
         advertiseData = new AdvertiseData.Builder()
                 .setIncludeDeviceName( false )
                 .setIncludeTxPowerLevel(false)
-                .addServiceData(pUuid,"1234".getBytes( Charset.forName( "UTF-8" ) ))
+                .addServiceData(pUuid, Objects.requireNonNull(cloudService.getUser().getPhoneNumber()).getBytes( Charset.forName( "UTF-8" ) ))
                 .build();
         System.out.println(advertiseData.toString());
         for (Map.Entry<ParcelUuid, byte[]> entry : advertiseData.getServiceData().entrySet()) {

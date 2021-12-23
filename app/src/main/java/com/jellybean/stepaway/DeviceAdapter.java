@@ -18,6 +18,10 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.ViewHolder
         dataset = devices;
     }
 
+    public void setDataset(ArrayList<Device> dataset) {
+        this.dataset = dataset;
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private TextView timeView;
         public ViewHolder(@NonNull View itemView) {

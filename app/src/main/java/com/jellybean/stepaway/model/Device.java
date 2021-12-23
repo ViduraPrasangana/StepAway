@@ -1,5 +1,7 @@
 package com.jellybean.stepaway.model;
 
+import com.jellybean.stepaway.service.DeviceIdentifierService;
+
 import java.util.ArrayList;
 
 public class Device {
@@ -7,14 +9,19 @@ public class Device {
     private String macAddress;
     private long lastIdentifiedTime;
     private Threat threatLevel;
+    private Threat maximumThreat;
     private ArrayList<Integer> rssis;
     private double averageDistance;
+
+    public Device() {
+    }
 
     public Device(String macAddress, long lastIdentifiedTime, Threat threatLevel) {
         this.macAddress = macAddress;
         this.lastIdentifiedTime = lastIdentifiedTime;
         this.threatLevel = threatLevel;
         this.averageDistance = 0;
+        this.maximumThreat = threatLevel;
         rssis = new ArrayList<Integer>();
     }
 
@@ -39,6 +46,9 @@ public class Device {
     }
 
     public void setThreatLevel(Threat threatLevel) {
+        if(this.threatLevel != null && threatLevel.getValue() > this.threatLevel.getValue()){
+            maximumThreat = threatLevel;
+        }
         this.threatLevel = threatLevel;
     }
 
@@ -56,6 +66,20 @@ public class Device {
         public int getValue() {
             return value;
         }
+
+        public static Threat getThreat(double distance){
+            if(distance< DeviceIdentifierService.DISTANCE_DANGER){
+                return LEVEL3;
+            }
+            if(distance< DeviceIdentifierService.DISTANCE_POTENTIAL_RISK){
+                return LEVEL2;
+            }
+            if(distance< DeviceIdentifierService.DISTANCE_WARNING){
+                return LEVEL3;
+            }
+
+            return NONE;
+        }
     }
 
     public ArrayList<Integer> getRssis() {
@@ -72,5 +96,18 @@ public class Device {
 
     public void setAverageDistance(double averageDistance) {
         this.averageDistance = averageDistance;
+        setThreatLevel(Threat.getThreat(averageDistance));
+    }
+
+    public Threat getMaximumThreat() {
+        return maximumThreat;
+    }
+
+    public void setMaximumThreat(Threat maximumThreat) {
+        this.maximumThreat = maximumThreat;
+    }
+
+    public void setRssis(ArrayList<Integer> rssis) {
+        this.rssis = rssis;
     }
 }

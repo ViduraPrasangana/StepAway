@@ -28,7 +28,7 @@ public class HomeFragment extends Fragment {
 
     ShapeRipple searchRipple;
     RecyclerView currentDevicesView;
-    RecyclerView.Adapter adapter;
+    DeviceAdapter adapter;
     ArrayList<Device> devices;
     boolean rippleStates;
     // TODO: Rename parameter arguments, choose names that match
@@ -93,6 +93,12 @@ public class HomeFragment extends Fragment {
     }
     public boolean getRippleStatus(){
         return rippleStates;
+    }
+
+    public void setDevices(ArrayList<Device> devices) {
+        this.devices = devices;
+        adapter.setDataset(this.devices);
+        adapter.notifyDataSetChanged();
     }
 
     public ArrayList<Device> getDevices() {
