@@ -7,6 +7,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.VibrationEffect;
@@ -14,9 +17,11 @@ import android.os.Vibrator;
 
 import com.jellybean.stepaway.MainActivity;
 import com.jellybean.stepaway.R;
+import com.jellybean.stepaway.fragment.SettingsFragment;
 import com.jellybean.stepaway.model.Device;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class DeviceIdentifierService {
     final int MEASURED_POWER = -69;
@@ -44,6 +49,14 @@ public class DeviceIdentifierService {
     Runnable garbageRunnable = new Runnable() {
         @Override
         public void run() {
+            Iterator<Device> itr = identifiedDevices.iterator();
+            while (itr.hasNext()) {
+                Device d = itr.next();
+                if(System.currentTimeMillis()-d.getLastIdentifiedTime()>RECYCLE_DEVICE_TIMEOUT){
+                    itr.remove();
+                    clearDevice(d);
+                }
+            }
 
             for (Device device:
                  identifiedDevices) {
@@ -66,7 +79,6 @@ public class DeviceIdentifierService {
 
     public void clearDevice(Device device){
         cloudService.sendDeviceToDB(device);
-        identifiedDevices.remove(device);
         if(service.getServiceCallbacks() != null) service.getServiceCallbacks().getHomeFragment().updateDevices();
     }
 
@@ -99,10 +111,13 @@ public class DeviceIdentifierService {
 
     }
     public void stopService(){
-        for (Device device :
-                identifiedDevices) {
-            clearDevice(device);
+        Iterator<Device> itr = identifiedDevices.iterator();
+        while (itr.hasNext()) {
+            Device d = itr.next();
+            clearDevice(d);
+            itr.remove();
         }
+
         serviceHandler.removeCallbacks(garbageRunnable);
         identifiedDevices = new ArrayList<>();
         if(service.getServiceCallbacks() != null) service.getServiceCallbacks().updateDevices(identifiedDevices);
@@ -145,8 +160,10 @@ public class DeviceIdentifierService {
             device.setAverageDistance(calculateAverageDistance(device));
             identifiedDevices.add(device);
             if(service.getServiceCallbacks() != null) service.getServiceCallbacks().getHomeFragment().updateDevices();
-            vibrateDevice();
-            createTempNotification();
+            if(service.getPreferenceValue(SettingsFragment.VIBRATE_PREF)) vibrateDevice();
+            if(service.getPreferenceValue(SettingsFragment.NOTIFICATION_PREF)) createTempNotification();
+            if(service.getPreferenceValue(SettingsFragment.RING_PREF)) ring();
+
         }else{
             inDevice.addRssi(rssi);
             inDevice.setAverageDistance(calculateAverageDistance(inDevice));
@@ -166,7 +183,11 @@ public class DeviceIdentifierService {
             v.vibrate(3000);
         }
     }
-
+    public void ring(){
+        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Ringtone r = RingtoneManager.getRingtone(service.getApplicationContext(), notification);
+        r.play();
+    }
     private void createTempNotification(){
         String NOTIFICATION_CHANNEL_ID = "STEP_AWAY_CHANNEL_2";
         Notification.Builder notifiBuilder;

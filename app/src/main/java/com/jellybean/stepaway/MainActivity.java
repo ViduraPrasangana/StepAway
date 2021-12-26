@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements IdentifierBackgro
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 21;
     private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 31;
     final int REQUEST_ENABLE_BT = 1;
+    public static final String myPref = "StepAwaySettings";
 
     private BottomAppBar bottomAppBar;
     private TextView title;

@@ -10,6 +10,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.jellybean.stepaway.DeviceAdapter;
+import com.jellybean.stepaway.DeviceHistoryAdapter;
 import com.jellybean.stepaway.fragment.HistoryFragment;
 import com.jellybean.stepaway.model.Device;
 
@@ -39,7 +40,8 @@ public class CloudService {
     public void sendDeviceToDB(Device device){
         databaseReference.child("recent").child(Objects.requireNonNull(user.getPhoneNumber())).push().setValue(device);
     }
-    public ArrayList<Device> loadRecent(DeviceAdapter deviceAdapter){
+
+    public ArrayList<Device> loadRecent(DeviceHistoryAdapter deviceAdapter){
         ArrayList<Device> devices = new ArrayList<>();
         databaseReference.child("recent").child(Objects.requireNonNull(user.getPhoneNumber())).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override

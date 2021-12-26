@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.jellybean.stepaway.DeviceAdapter;
+import com.jellybean.stepaway.DeviceHistoryAdapter;
 import com.jellybean.stepaway.R;
 import com.jellybean.stepaway.model.Device;
 import com.jellybean.stepaway.service.CloudService;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
  * create an instance of this fragment.
  */
 public class HistoryFragment extends Fragment {
-    DeviceAdapter adapter;
+    DeviceHistoryAdapter adapter;
     RecyclerView historyView;
     CloudService cloudService;
     ArrayList<Device> historyDevices;
@@ -42,7 +43,7 @@ public class HistoryFragment extends Fragment {
         historyView = view.findViewById(R.id.historyView);
 
         cloudService = CloudService.getInstance();
-        adapter = new DeviceAdapter(new ArrayList<>());
+        adapter = new DeviceHistoryAdapter(new ArrayList<>());
         historyView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         historyView.setAdapter(adapter);
         cloudService.loadRecent(adapter);

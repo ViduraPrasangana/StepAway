@@ -3,12 +3,58 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragment.SettingsFragment">
+    tools:context=".fragment.SettingsFragment"
+    android:padding="10dp">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="settings" />
+   <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:orientation="vertical">
+       <Switch
+           android:id="@+id/vibration"
+           android:layout_width="match_parent"
+           android:layout_height="50dp"
+           android:text="Vibration"
+           android:padding="10dp"
+           android:textColor="@color/colorPrimaryDark"
+           android:textStyle=""
+           android:textSize="18sp"
+           android:background="@drawable/switch_background"
+           android:layout_marginBottom="10dp"/>
+       <Switch
+           android:id="@+id/ring"
+           android:layout_width="match_parent"
+           android:layout_height="50dp"
+           android:text="Ringing tone"
+           android:padding="10dp"
+           android:textColor="@color/colorPrimaryDark"
+           android:textStyle=""
+           android:textSize="18sp"
+           android:background="@drawable/switch_background"
+           android:layout_marginBottom="10dp"/>
+       <Switch
+           android:id="@+id/notification"
+           android:layout_width="match_parent"
+           android:layout_height="50dp"
+           android:text="Show a notification"
+           android:padding="10dp"
+           android:textColor="@color/colorPrimaryDark"
+           android:textStyle=""
+           android:textSize="18sp"
+           android:background="@drawable/switch_background"/>
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="0dp"
+           android:layout_weight="1"/>
+       <Button
+           android:id="@+id/logout"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:backgroundTint="@android:color/holo_red_dark"
+           android:text="Log Out"
+           android:layout_marginBottom="100dp"/>
+   </LinearLayout>
+
+
 
 </FrameLayout>

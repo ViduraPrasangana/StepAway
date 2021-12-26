@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Binder;
 import android.os.Build;
@@ -20,6 +21,8 @@ import com.jellybean.stepaway.model.Device;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+
+import static com.jellybean.stepaway.MainActivity.myPref;
 
 public class IdentifierBackgroundService extends Service {
     public final static String START = "START";
@@ -131,5 +134,17 @@ public class IdentifierBackgroundService extends Service {
 
     public ArrayList<Device> getDevices(){
         return deviceIdentifierService.getDevices();
+    }
+    public boolean getPreferenceValue(String setting)
+    {
+        SharedPreferences sp = getSharedPreferences(myPref,0);
+        return sp.getBoolean(setting,true);
+    }
+
+    public void writeToPreference(String setting,boolean thePreference)
+    {
+        SharedPreferences.Editor editor = getSharedPreferences(myPref,0).edit();
+        editor.putBoolean(setting, thePreference);
+        editor.apply();
     }
 }

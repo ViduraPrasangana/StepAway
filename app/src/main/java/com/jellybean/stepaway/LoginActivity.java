@@ -25,6 +25,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
     FirebaseAuth firebaseAuth;
 
     String verificationId;
+    String finalName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +72,13 @@ public class LoginActivity extends AppCompatActivity {
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(name.getText().toString().isEmpty()){
+                    Toast.makeText(LoginActivity.this,"Please enter a name",Toast.LENGTH_LONG).show();
+                }else{
+                    finalName = name.getText().toString();
+                    verifyPhone(phone.getText().toString());
+                }
 
-                verifyPhone(phone.getText().toString());
             }
         });
 
@@ -105,15 +112,14 @@ public class LoginActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 // Sign in success, update UI with the signed-in user's information
-                                Log.d("LoginActivity", "signInWithCredential:success");
 
-                                FirebaseUser user = task.getResult().getUser();
-                                if(user != null){
+                                if(firebaseAuth.getCurrentUser() != null){
+                                    FirebaseDatabase d = FirebaseDatabase.getInstance();
+                                    d.getReference().child("users").child(firebaseAuth.getCurrentUser().getPhoneNumber()).setValue(finalName);
                                     startMainActivity();
                                 }
                             } else {
                                 // Sign in failed, display a message and update the UI
-                                Log.w("LoginActivity", "signInWithCredential:failure", task.getException());
                                 if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
                                     Toast.makeText(LoginActivity.this,"Login failed",Toast.LENGTH_LONG).show();
                                 }
