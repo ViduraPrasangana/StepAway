@@ -28,7 +28,7 @@ public class DeviceIdentifierService {
     final int N = 2;
     final int AVERAGE_COUNT = 3;
     final int TOGGLE_TIMEOUT = 10000;
-    final int RECYCLE_DEVICE_TIMEOUT = 5000;
+    final int RECYCLE_DEVICE_TIMEOUT = 30000;
 
     public final static float DISTANCE_DANGER = 1;
     public final static float DISTANCE_POTENTIAL_RISK = 2;
@@ -55,13 +55,6 @@ public class DeviceIdentifierService {
                 if(System.currentTimeMillis()-d.getLastIdentifiedTime()>RECYCLE_DEVICE_TIMEOUT){
                     itr.remove();
                     clearDevice(d);
-                }
-            }
-
-            for (Device device:
-                 identifiedDevices) {
-                if(System.currentTimeMillis()-device.getLastIdentifiedTime()>RECYCLE_DEVICE_TIMEOUT){
-                    clearDevice(device);
                 }
             }
             serviceHandler.postDelayed(this,5000);
@@ -149,11 +142,27 @@ public class DeviceIdentifierService {
     public void addDevice(Device device,int rssi){
         boolean in = false;
         Device inDevice = null;
+        boolean d1 = false;
+        if(device.getUser() != null){
+            d1 = true;
+        }
         for(Device device1:identifiedDevices){
-            if(device1.getMacAddress().equals(device.getMacAddress())) {
-                in = true;
-                inDevice = device1;
+            boolean d2 = false;
+            if(device1.getUser() != null){
+                d2 = true;
             }
+            if(d1 && d2){
+                if(device1.getUser().equals(device.getUser())) {
+                    in = true;
+                    inDevice = device1;
+                }
+            }else{
+                if(device1.getMacAddress().equals(device.getMacAddress())) {
+                    in = true;
+                    inDevice = device1;
+                }
+            }
+
         }
         if(!in){
             device.addRssi(rssi);

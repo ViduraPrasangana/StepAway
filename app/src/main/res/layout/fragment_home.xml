@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:weightSum="10"
+        android:gravity="center_horizontal"
         android:orientation="vertical">
         <com.rodolfonavalon.shaperipplelibrary.ShapeRipple
             android:id="@+id/ripple"
@@ -18,11 +19,27 @@
             app:ripple_color="@color/colorPrimary"
             app:ripple_duration="5000"
             app:ripple_count="7"
+            android:visibility="gone"
             android:layout_weight="5"/>
+        <ImageView
+            android:id="@+id/image"
+            android:src="@drawable/initial"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="5"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Current nearby devices..."
+            android:textColor="@color/colorPrimary"
+            android:textStyle="italic"
+            android:layout_marginVertical="20dp"
+            android:layout_marginHorizontal="30dp"/>
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/currentDevices"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="0dp"
+            android:layout_weight="5"/>
     </LinearLayout>
 
 

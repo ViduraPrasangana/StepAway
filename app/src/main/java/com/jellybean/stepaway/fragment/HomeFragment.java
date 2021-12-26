@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.jellybean.stepaway.MainActivity;
 import com.jellybean.stepaway.model.Device;
@@ -27,6 +28,7 @@ import java.util.Arrays;
 public class HomeFragment extends Fragment {
 
     ShapeRipple searchRipple;
+    ImageView imageView;
     RecyclerView currentDevicesView;
     DeviceAdapter adapter;
     ArrayList<Device> devices;
@@ -43,7 +45,11 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        setRipple(((MainActivity) requireActivity()).isSearchStatus());
+        MainActivity mainActivity = (MainActivity) requireActivity();
+        setRipple(mainActivity.isSearchStatus());
+        if(mainActivity.getMyService() !=null){
+            setDevices(mainActivity.getMyService().getDevices());
+        }
     }
 
 
@@ -70,6 +76,7 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         searchRipple = view.findViewById(R.id.ripple);
+        imageView = view.findViewById(R.id.image);
         currentDevicesView = view.findViewById(R.id.currentDevices);
         devices = new ArrayList<Device>();
         adapter = new DeviceAdapter(devices);
@@ -84,10 +91,14 @@ public class HomeFragment extends Fragment {
     public void setRipple(boolean status){
         if(!status) {
             searchRipple.stopRipple();
+            searchRipple.setVisibility(View.GONE);
+            imageView.setVisibility(View.VISIBLE);
             rippleStates = false;
         }
         else {
+            searchRipple.setVisibility(View.VISIBLE);
             searchRipple.startRipple();
+            imageView.setVisibility(View.GONE);
             rippleStates = true;
         }
     }

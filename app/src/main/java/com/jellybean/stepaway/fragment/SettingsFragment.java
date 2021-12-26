@@ -1,5 +1,6 @@
 package com.jellybean.stepaway.fragment;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -8,9 +9,12 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.jellybean.stepaway.LoginActivity;
 import com.jellybean.stepaway.R;
 
 import java.util.Objects;
@@ -21,6 +25,7 @@ import static com.jellybean.stepaway.MainActivity.myPref;
 public class SettingsFragment extends Fragment {
 
     Switch vibration,ring,notification;
+    Button logout;
 
     public static String VIBRATE_PREF = "vibrate";
     public static String RING_PREF = "ring";
@@ -45,7 +50,17 @@ public class SettingsFragment extends Fragment {
         vibration = view.findViewById(R.id.vibration);
         ring = view.findViewById(R.id.ring);
         notification = view.findViewById(R.id.notification);
+        logout = view.findViewById(R.id.logout);
 
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                Intent i = new Intent(requireContext(), LoginActivity.class);
+                startActivity(i);
+                requireActivity().finish();
+            }
+        });
         vibration.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

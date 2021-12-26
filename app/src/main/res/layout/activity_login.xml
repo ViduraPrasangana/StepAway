@@ -32,7 +32,6 @@
             android:layout_height="40dp"
             android:layout_marginBottom="20dp"
             android:background="@drawable/otp_background"
-            android:inputType="phone"
             android:paddingHorizontal="10dp"
             android:textColor="@color/colorPrimary" />
 

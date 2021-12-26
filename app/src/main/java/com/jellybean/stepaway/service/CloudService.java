@@ -50,9 +50,10 @@ public class CloudService {
                     for (DataSnapshot dataSnapshot:
                     Objects.requireNonNull(task.getResult()).getChildren()) {
                         devices.add(dataSnapshot.getValue(Device.class));
-                        deviceAdapter.setDataset(devices);
-                        deviceAdapter.notifyDataSetChanged();
+
                     }
+                    deviceAdapter.setDataset(devices);
+                    deviceAdapter.notifyDataSetChanged();
                 }
             }
         });

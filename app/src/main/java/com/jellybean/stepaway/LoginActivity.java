@@ -76,6 +76,7 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this,"Please enter a name",Toast.LENGTH_LONG).show();
                 }else{
                     finalName = name.getText().toString();
+                    name.setEnabled(false);
                     verifyPhone(phone.getText().toString());
                 }
 

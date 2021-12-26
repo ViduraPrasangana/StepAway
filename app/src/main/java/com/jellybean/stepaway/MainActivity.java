@@ -159,18 +159,23 @@ public class MainActivity extends AppCompatActivity implements IdentifierBackgro
 //            visualizeState();
 //        }
     }
-
+    public void setTitle(String title){
+            this.title.setText(title);
+    }
     public void changeFragment(int menu_id){
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         switch (menu_id){
             case R.id.history:
                 ft.replace(R.id.frag_frame, historyFragment).commit();
+                setTitle("History");
                 break;
             case R.id.settings:
                 ft.replace(R.id.frag_frame, settingsFragment).commit();
+                setTitle("Settings");
                 break;
             default:
                 ft.replace(R.id.frag_frame, homeFragment).commit();
+                setTitle("Home");
                 break;
 
         }
@@ -277,6 +282,10 @@ public class MainActivity extends AppCompatActivity implements IdentifierBackgro
             bound = false;
         }
     };
+
+    public IdentifierBackgroundService getMyService() {
+        return myService;
+    }
 
     @Override
     public void updateDevices(ArrayList<Device> devices) {

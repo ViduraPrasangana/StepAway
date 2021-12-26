@@ -43,7 +43,7 @@ public class DeviceHistoryAdapter extends RecyclerView.Adapter<DeviceHistoryAdap
     public int getItemViewType(int position) {
         // Just as an example, return 0 or 2 depending on position
         // Note that unlike in ListView adapters, types don't have to be contiguous
-        return dataset.get(position).getThreatLevel().getValue();
+        return dataset.get(position).getMaximumThreat().getValue();
     }
     @NonNull
     @Override
@@ -70,7 +70,7 @@ public class DeviceHistoryAdapter extends RecyclerView.Adapter<DeviceHistoryAdap
         Device device = dataset.get(position);
         String distance = ((double) Math.round(device.getAverageDistance()*1000)/1000)+" m";
         Date date=new Date(device.getLastIdentifiedTime());
-        DateFormat df = new SimpleDateFormat("yyyy:MM:dd:HH:mm");
+        DateFormat df = new SimpleDateFormat("yyyy:MM:dd - HH:mm");
         String username = (device.getUserName() != null ? device.getUserName():"Unknown User")+" : "+df.format(date);
         holder.getTimeView().setText(username);
     }
