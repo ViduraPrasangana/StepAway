@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class DeviceIdentifierService {
-    final int MEASURED_POWER = -69;
+    final int MEASURED_POWER = -1;
     final int N = 2;
-    final int AVERAGE_COUNT = 3;
+    final int AVERAGE_COUNT = 1;
     final int TOGGLE_TIMEOUT = 10000;
     final int RECYCLE_DEVICE_TIMEOUT = 30000;
 
@@ -166,6 +166,7 @@ public class DeviceIdentifierService {
         }
         if(!in){
             device.addRssi(rssi);
+            System.out.println("Distance "+calculateAverageDistance(device)+" "+rssi);
             device.setAverageDistance(calculateAverageDistance(device));
             identifiedDevices.add(device);
             if(service.getServiceCallbacks() != null) service.getServiceCallbacks().getHomeFragment().updateDevices();
@@ -175,6 +176,7 @@ public class DeviceIdentifierService {
 
         }else{
             inDevice.addRssi(rssi);
+            System.out.println("Distance "+calculateAverageDistance(inDevice)+" "+rssi);
             inDevice.setAverageDistance(calculateAverageDistance(inDevice));
             inDevice.setLastIdentifiedTime(System.currentTimeMillis());
             if(service.getServiceCallbacks() != null)  service.getServiceCallbacks().getHomeFragment().updateDevices();

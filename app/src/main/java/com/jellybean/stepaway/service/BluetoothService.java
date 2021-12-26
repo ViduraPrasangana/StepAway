@@ -73,7 +73,7 @@ public class BluetoothService {
 
             if(scanRecord != null){
                 for (Map.Entry<ParcelUuid, byte[]> entry : scanRecord.getServiceData().entrySet()) {
-                    System.out.println(entry.getKey().toString()+" "+new String(entry.getValue(),Charset.forName( "UTF-8" )));
+                    System.out.println(entry.getKey().toString()+" "+scanRecord.getTxPowerLevel()+" "+new String(entry.getValue(),Charset.forName( "UTF-8" )));
                     if(entry.getKey().toString().equals(context.getString( R.string.ble_uuid ))){
                         user = "+94"+new String(entry.getValue(),Charset.forName( "UTF-8" ));
                     }
@@ -118,7 +118,7 @@ public class BluetoothService {
         ParcelUuid pUuid = new ParcelUuid( UUID.fromString( context.getString( R.string.ble_uuid ) ) );
         advertiseData = new AdvertiseData.Builder()
                 .setIncludeDeviceName( false )
-                .setIncludeTxPowerLevel(false)
+                .setIncludeTxPowerLevel(true)
                 .addServiceData(pUuid, Objects.requireNonNull(cloudService.getUser().getPhoneNumber().substring(3)).getBytes( Charset.forName( "UTF-8" ) ))
                 .build();
         System.out.println(advertiseData.toString());
