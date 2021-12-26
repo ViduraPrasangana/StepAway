@@ -43,7 +43,7 @@ public class DeviceHistoryAdapter extends RecyclerView.Adapter<DeviceHistoryAdap
     public int getItemViewType(int position) {
         // Just as an example, return 0 or 2 depending on position
         // Note that unlike in ListView adapters, types don't have to be contiguous
-        return dataset.get(position).getMaximumThreat().getValue();
+        return dataset.get(position).getMaximumThreat() !=null ? dataset.get(position).getMaximumThreat().getValue():dataset.get(position).getThreatLevel().getValue();
     }
     @NonNull
     @Override

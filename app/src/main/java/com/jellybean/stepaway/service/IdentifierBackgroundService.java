@@ -133,7 +133,7 @@ public class IdentifierBackgroundService extends Service {
     }
 
     public ArrayList<Device> getDevices(){
-        return deviceIdentifierService.getDevices();
+        return deviceIdentifierService!= null ? deviceIdentifierService.getDevices(): new ArrayList<>();
     }
     public boolean getPreferenceValue(String setting)
     {
