@@ -8,13 +8,16 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 
 import com.jellybean.stepaway.MainActivity;
 import com.jellybean.stepaway.R;
+import com.jellybean.stepaway.model.Device;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -27,34 +30,38 @@ public class IdentifierBackgroundService extends Service {
 
     DeviceIdentifierService deviceIdentifierService;
 
+    private final IBinder binder = new LocalBinder();
+    private MainActivity serviceCallbacks;
+
     public IdentifierBackgroundService() {
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return binder;
+    }
+
+    public void setCallbacks(MainActivity callbacks) {
+        serviceCallbacks = callbacks;
+    }
+
+    public MainActivity getServiceCallbacks() {
+        return serviceCallbacks;
+    }
+
+    public boolean isServiceStarted() {
+        return serviceStarted;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if(intent !=null){
-            switch (Objects.requireNonNull(intent.getAction())){
-                case START:
-                    startService();
-                    break;
-                case STOP:
-                    stopService();
-                    break;
-            }
-        }
         return START_STICKY;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Notification notification = createNotification();
-        startForeground(1, notification);
+
     }
     public void startService(){
         if(serviceStarted) return;
@@ -65,6 +72,8 @@ public class IdentifierBackgroundService extends Service {
 
         deviceIdentifierService = new DeviceIdentifierService(this);
         deviceIdentifierService.startService();
+        Notification notification = createNotification();
+        startForeground(1, notification);
     }
 
     public void stopService(){
@@ -93,8 +102,7 @@ public class IdentifierBackgroundService extends Service {
             notificationChannel.setDescription("Step away notification");
             notificationChannel.enableLights(true);
             notificationChannel.setLightColor(Color.RED);
-            notificationChannel.enableVibration(true);
-            notificationChannel.setVibrationPattern(new long[]{100,200,300});
+            notificationChannel.enableVibration(false);
             notificationManager.createNotificationChannel(notificationChannel);
 
             notifiBuilder = new Notification.Builder(this,NOTIFICATION_CHANNEL_ID);
@@ -109,5 +117,19 @@ public class IdentifierBackgroundService extends Service {
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setTicker("Step Away")
                 .build();
+    }
+
+    public class LocalBinder extends Binder {
+        public IdentifierBackgroundService getService() {
+            // Return this instance of MyService so clients can call public methods
+            return IdentifierBackgroundService.this;
+        }
+    }
+    public interface ServiceCallbacks {
+        void updateDevices(ArrayList<Device> devices);
+    }
+
+    public ArrayList<Device> getDevices(){
+        return deviceIdentifierService.getDevices();
     }
 }

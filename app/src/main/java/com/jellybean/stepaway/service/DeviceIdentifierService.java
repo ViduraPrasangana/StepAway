@@ -1,10 +1,20 @@
 package com.jellybean.stepaway.service;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Handler;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 
-import com.jellybean.stepaway.model.Device;
 import com.jellybean.stepaway.MainActivity;
+import com.jellybean.stepaway.R;
+import com.jellybean.stepaway.model.Device;
 
 import java.util.ArrayList;
 
@@ -21,8 +31,7 @@ public class DeviceIdentifierService {
 
     BluetoothService bluetoothService;
     CloudService cloudService;
-    MainActivity activity = null;
-    Context context;
+    IdentifierBackgroundService service;
 
     Runnable serviceRunnable;
     Runnable serviceRunnable2;
@@ -35,6 +44,7 @@ public class DeviceIdentifierService {
     Runnable garbageRunnable = new Runnable() {
         @Override
         public void run() {
+
             for (Device device:
                  identifiedDevices) {
                 if(System.currentTimeMillis()-device.getLastIdentifiedTime()>RECYCLE_DEVICE_TIMEOUT){
@@ -47,40 +57,36 @@ public class DeviceIdentifierService {
     };
 
 
-    public DeviceIdentifierService(Context activity) {
-        if(activity instanceof MainActivity){
-            this.activity = (MainActivity) activity;
-        }
-        else {
-            this.context = activity;
-        }
+    public DeviceIdentifierService(IdentifierBackgroundService service) {
+        this.service = service;
         bluetoothService = new BluetoothService(this);
         cloudService = CloudService.getInstance();
-        bluetoothService.initBLE(activity);
+        bluetoothService.initBLE(service);
     }
 
     public void clearDevice(Device device){
         cloudService.sendDeviceToDB(device);
         identifiedDevices.remove(device);
-        if(activity!=null) activity.getHomeFragment().updateDevices();
+        if(service.getServiceCallbacks() != null) service.getServiceCallbacks().getHomeFragment().updateDevices();
     }
 
     public void startService(){
         identifiedDevices = new ArrayList<>();
-        if(activity!=null) activity.getHomeFragment().setDevices(identifiedDevices);
+        System.out.println("Scanning");
+        if(service.getServiceCallbacks() != null) service.getServiceCallbacks().updateDevices(identifiedDevices);
 
         serviceRunnable = new Runnable() {
             @Override
             public void run() {
                 bluetoothService.stopAdvertising();
                 bluetoothService.startScanning();
-                if(activity!=null) activity.setStatusText("Scanning...");
+                if(service.getServiceCallbacks() != null) service.getServiceCallbacks().setStatusText("Scanning...");
                 serviceRunnable2 = new Runnable() {
                     @Override
                     public void run() {
                         bluetoothService.stopScanning();
                         bluetoothService.startAdvertising();
-                        if(activity!=null) activity.setStatusText("Advertising...");
+                        if(service.getServiceCallbacks() != null)  service.getServiceCallbacks().setStatusText("Advertising...");
                         serviceHandler.postDelayed(serviceRunnable,TOGGLE_TIMEOUT);
                     }
                 };
@@ -99,13 +105,13 @@ public class DeviceIdentifierService {
         }
         serviceHandler.removeCallbacks(garbageRunnable);
         identifiedDevices = new ArrayList<>();
-        if(activity!=null) activity.getHomeFragment().setDevices(identifiedDevices);
+        if(service.getServiceCallbacks() != null) service.getServiceCallbacks().updateDevices(identifiedDevices);
 
         serviceHandler.removeCallbacks(serviceRunnable);
         serviceHandler.removeCallbacks(serviceRunnable2);
         bluetoothService.stopAdvertising();
         bluetoothService.stopScanning();
-        if(activity!=null) activity.setStatusText("");
+        if(service.getServiceCallbacks() != null) service.getServiceCallbacks().setStatusText("");
     }
 
     public void setAdvertisable(boolean advertisable) {
@@ -138,13 +144,59 @@ public class DeviceIdentifierService {
             device.addRssi(rssi);
             device.setAverageDistance(calculateAverageDistance(device));
             identifiedDevices.add(device);
-            if(activity!=null) activity.getHomeFragment().updateDevices();
+            if(service.getServiceCallbacks() != null) service.getServiceCallbacks().getHomeFragment().updateDevices();
+            vibrateDevice();
+            createTempNotification();
         }else{
             inDevice.addRssi(rssi);
             inDevice.setAverageDistance(calculateAverageDistance(inDevice));
             inDevice.setLastIdentifiedTime(System.currentTimeMillis());
-            if(activity!=null) activity.getHomeFragment().updateDevices();
+            if(service.getServiceCallbacks() != null)  service.getServiceCallbacks().getHomeFragment().updateDevices();
         }
 
+    }
+
+    private void vibrateDevice() {
+        Vibrator v = (Vibrator) service.getSystemService(Context.VIBRATOR_SERVICE);
+// Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(3000, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            v.vibrate(3000);
+        }
+    }
+
+    private void createTempNotification(){
+        String NOTIFICATION_CHANNEL_ID = "STEP_AWAY_CHANNEL_2";
+        Notification.Builder notifiBuilder;
+        NotificationManager notificationManager =(NotificationManager) service.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.O){
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,"Step away notification",NotificationManager.IMPORTANCE_DEFAULT);
+            notificationChannel.setDescription("Step away notification");
+            notificationChannel.enableLights(true);
+            notificationChannel.setLightColor(Color.RED);
+            notificationChannel.enableVibration(false);
+            notificationManager.createNotificationChannel(notificationChannel);
+
+            notifiBuilder = new Notification.Builder(service,NOTIFICATION_CHANNEL_ID);
+        } else {
+            notifiBuilder = new Notification.Builder(service);
+        }
+
+
+        Notification notification = notifiBuilder.setContentTitle("Nearby person detected")
+                .setContentText("Take necessary action")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setTicker("Step Away")
+                .build();
+
+        notificationManager.notify(identifiedDevices.size()+100,notification);
+
+    }
+
+    public ArrayList<Device> getDevices() {
+        return identifiedDevices;
     }
 }

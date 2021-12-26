@@ -29,7 +29,7 @@ import com.google.firebase.auth.PhoneAuthProvider;
 import java.util.concurrent.TimeUnit;
 
 public class LoginActivity extends AppCompatActivity {
-    EditText phone;
+    EditText phone,name;
     Button sendBtn;
     PinView otpView;
 
@@ -42,6 +42,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         phone = findViewById(R.id.phone);
+        name = findViewById(R.id.name);
         sendBtn = findViewById(R.id.sendBtn);
         otpView = findViewById(R.id.otp_view);
 

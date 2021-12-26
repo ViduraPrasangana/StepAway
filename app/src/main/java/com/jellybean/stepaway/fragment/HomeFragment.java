@@ -71,7 +71,7 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         searchRipple = view.findViewById(R.id.ripple);
         currentDevicesView = view.findViewById(R.id.currentDevices);
-        devices = new ArrayList<Device>(Arrays.asList(new Device("1234",5456, Device.Threat.LEVEL1),new Device("1234",4636, Device.Threat.LEVEL2)));
+        devices = new ArrayList<Device>();
         adapter = new DeviceAdapter(devices);
         currentDevicesView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         currentDevicesView.setAdapter(adapter);

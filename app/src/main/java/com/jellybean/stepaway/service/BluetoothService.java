@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.ParcelUuid;
 import android.util.Log;
 
+import com.jellybean.stepaway.MainActivity;
 import com.jellybean.stepaway.R;
 import com.jellybean.stepaway.model.Device;
 
@@ -47,6 +48,7 @@ public class BluetoothService {
     Intent enableIntent;
 
     boolean advertisable = true;
+    Context context ;
 
     AdvertiseCallback advertisingCallback = new AdvertiseCallback() {
         @Override
@@ -67,20 +69,29 @@ public class BluetoothService {
             super.onScanResult(callbackType, result);
             String data = "";
             ScanRecord scanRecord = result.getScanRecord();
+            String user = null;
 
             if(scanRecord != null){
                 for (Map.Entry<ParcelUuid, byte[]> entry : scanRecord.getServiceData().entrySet()) {
                     System.out.println(entry.getKey().toString()+" "+new String(entry.getValue(),Charset.forName( "UTF-8" )));
+                    if(entry.getKey().toString().equals(context.getString( R.string.ble_uuid ))){
+                        user = "+94"+new String(entry.getValue(),Charset.forName( "UTF-8" ));
+                    }
                 }
 
 //                data = new String(scanRecord.getServiceData().get(scanRecord.getServiceUuids().get(0)), Charset.forName( "UTF-8" ));
             }
             System.out.println("############ found " +result.getDevice().getAddress()+" "+result.getDevice().getName()+" " + data);
-            deviceIdentifierService.addDevice(new Device(
+            Device device = new Device(
                     result.getDevice().getAddress(),
                     System.currentTimeMillis(),
-                    Device.Threat.LEVEL3
-            ),result.getRssi());
+                    Device.Threat.LEVEL3,
+                    user
+            );
+            deviceIdentifierService.addDevice(device,result.getRssi());
+            CloudService cloudService = CloudService.getInstance();
+            if(user!=null)cloudService.getUserName(user,device, (IdentifierBackgroundService) context);
+
         }
     };
 
@@ -89,6 +100,7 @@ public class BluetoothService {
     }
 
     public void initBLE(Context context){
+        this.context = context;
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
@@ -107,13 +119,12 @@ public class BluetoothService {
         advertiseData = new AdvertiseData.Builder()
                 .setIncludeDeviceName( false )
                 .setIncludeTxPowerLevel(false)
-                .addServiceData(pUuid, Objects.requireNonNull(cloudService.getUser().getPhoneNumber()).getBytes( Charset.forName( "UTF-8" ) ))
+                .addServiceData(pUuid, Objects.requireNonNull(cloudService.getUser().getPhoneNumber().substring(3)).getBytes( Charset.forName( "UTF-8" ) ))
                 .build();
         System.out.println(advertiseData.toString());
         for (Map.Entry<ParcelUuid, byte[]> entry : advertiseData.getServiceData().entrySet()) {
             System.out.println(entry.getKey().toString()+" "+Arrays.toString(entry.getValue()));
         }
-        System.out.println(Arrays.toString("".getBytes( Charset.forName( "UTF-8" ) )));
     }
 
     public void startScanning() {

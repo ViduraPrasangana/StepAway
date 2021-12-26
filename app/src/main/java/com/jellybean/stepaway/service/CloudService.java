@@ -61,4 +61,16 @@ public class CloudService {
     public FirebaseUser getUser(){
         return firebaseAuth.getCurrentUser();
     }
+
+    public void getUserName(String user, Device device, IdentifierBackgroundService identifierBackgroundService) {
+        databaseReference.child("users").child(user).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if(task.isSuccessful()){
+                    device.setUserName(Objects.requireNonNull(task.getResult()).getValue(String.class));
+                    identifierBackgroundService.getServiceCallbacks().getHomeFragment().updateDevices();
+                }
+            }
+        });
+    }
 }

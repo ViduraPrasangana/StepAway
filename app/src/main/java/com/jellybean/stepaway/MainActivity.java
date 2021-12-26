@@ -7,14 +7,17 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
-import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Vibrator;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -26,22 +29,22 @@ import com.jellybean.stepaway.fragment.BottomNavigationDrawerFragment;
 import com.jellybean.stepaway.fragment.HistoryFragment;
 import com.jellybean.stepaway.fragment.HomeFragment;
 import com.jellybean.stepaway.fragment.SettingsFragment;
+import com.jellybean.stepaway.model.Device;
 import com.jellybean.stepaway.service.DeviceIdentifierService;
 import com.jellybean.stepaway.service.IdentifierBackgroundService;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity implements IdentifierBackgroundService.ServiceCallbacks {
     public static final int REQUEST_ACCESS_COARSE_LOCATION = 1;
     public static final int REQUEST_ENABLE_BLUETOOTH = 11;
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 21;
     private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 31;
     final int REQUEST_ENABLE_BT = 1;
 
-    private BluetoothAdapter bluetoothAdapter;
-    Vibrator vibrator;
     private BottomAppBar bottomAppBar;
     private TextView title;
     private TextView status;
-    int k,l,m;
 
     FrameLayout fragFrame;
     HomeFragment homeFragment;
@@ -50,8 +53,11 @@ public class MainActivity extends AppCompatActivity {
 
     FloatingActionButton fab;
 
-    DeviceIdentifierService deviceIdentifierService;
     boolean searchStatus = false;
+
+    private IdentifierBackgroundService myService;
+    private boolean bound = false;
+    Intent i;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
         }
-        deviceIdentifierService = new DeviceIdentifierService(this);
 
         homeFragment = HomeFragment.newInstance(searchStatus);
         historyFragment = new HistoryFragment();
@@ -102,25 +107,57 @@ public class MainActivity extends AppCompatActivity {
     }
     public void toggleSearch(){
         searchStatus = !searchStatus;
+        visualizeState();
+        if(myService.isServiceStarted()){
+            myService.stopService();
+        }else{
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(i);
+                startService(i);
+            }
+            myService.startService();
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(serviceConnection);
+        bound = false;
+    }
+
+    public void visualizeState(){
         homeFragment.setRipple(searchStatus);
         fab.setImageDrawable(ContextCompat.getDrawable(this, searchStatus? R.drawable.ic_outline_pause_24: R.drawable.ic_baseline_track_changes_24));
-//        if(searchStatus) deviceIdentifierService.startService();
-//        else deviceIdentifierService.stopService();
-
-        Intent i = new Intent(this, IdentifierBackgroundService.class);
-        if(searchStatus) i.setAction(IdentifierBackgroundService.START);
-        else i.setAction(IdentifierBackgroundService.STOP);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(i);
-            return;
-        }
-        startService(i);
     }
 
     public HomeFragment getHomeFragment() {
         return homeFragment;
     }
 
+    private boolean isMyServiceRunning() {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (IdentifierBackgroundService.class.getName().equals(service.service.getClassName())) {
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        i = new Intent(this, IdentifierBackgroundService.class);
+        bindService(i, serviceConnection, Context.BIND_AUTO_CREATE);
+
+//        if(isMyServiceRunning()) {
+//            searchStatus = true;
+//            visualizeState();
+//        }
+    }
 
     public void changeFragment(int menu_id){
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -216,5 +253,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private ServiceConnection serviceConnection = new ServiceConnection() {
 
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // cast the IBinder and get MyService instance
+            IdentifierBackgroundService.LocalBinder binder = (IdentifierBackgroundService.LocalBinder) service;
+            myService = binder.getService();
+            bound = true;
+            System.out.println("################# bound");
+            myService.setCallbacks(MainActivity.this); // register
+            if(myService.isServiceStarted()){
+                searchStatus = true;
+                visualizeState();
+                updateDevices(myService.getDevices());
+            }
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            bound = false;
+        }
+    };
+
+    @Override
+    public void updateDevices(ArrayList<Device> devices) {
+        this.homeFragment.setDevices(devices);
+    }
 }

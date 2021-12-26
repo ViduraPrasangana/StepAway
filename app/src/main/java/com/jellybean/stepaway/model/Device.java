@@ -1,5 +1,6 @@
 package com.jellybean.stepaway.model;
 
+import com.jellybean.stepaway.service.CloudService;
 import com.jellybean.stepaway.service.DeviceIdentifierService;
 
 import java.util.ArrayList;
@@ -7,6 +8,8 @@ import java.util.ArrayList;
 public class Device {
 
     private String macAddress;
+    private String user = null;
+    private String userName;
     private long lastIdentifiedTime;
     private Threat threatLevel;
     private Threat maximumThreat;
@@ -16,13 +19,32 @@ public class Device {
     public Device() {
     }
 
-    public Device(String macAddress, long lastIdentifiedTime, Threat threatLevel) {
+    public Device(String macAddress, long lastIdentifiedTime, Threat threatLevel,String user) {
         this.macAddress = macAddress;
         this.lastIdentifiedTime = lastIdentifiedTime;
         this.threatLevel = threatLevel;
         this.averageDistance = 0;
         this.maximumThreat = threatLevel;
+        this.user = user;
         rssis = new ArrayList<Integer>();
+
+
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getMacAddress() {
